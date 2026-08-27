@@ -2,12 +2,12 @@ package com.projeto.studymais.service;
 
 import com.projeto.studymais.dto.materia.MateriaRequestDTO;
 import com.projeto.studymais.dto.materia.MateriaResponseDTO;
+import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Materia;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.MateriaRepository;
 import com.projeto.studymais.repository.UsuarioRepository;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,12 +51,12 @@ public class MateriaService {
 
     private Materia buscarEntidadePorId(Integer id) {
         return materiaRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Matéria não encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Materia nao encontrada."));
     }
 
     private void preencherMateria(Materia materia, MateriaRequestDTO request) {
         Usuario usuario = usuarioRepository.findById(request.usuarioId())
-                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
         materia.setNomeMateria(request.nomeMateria());
         materia.setDescricao(request.descricao());
         materia.setCor(request.cor());

@@ -2,10 +2,10 @@ package com.projeto.studymais.service;
 
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
+import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +47,7 @@ public class UsuarioService {
 
     private Usuario buscarEntidadePorId(Integer id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
     }
 
     private void preencherUsuario(Usuario usuario, UsuarioRequestDTO request) {

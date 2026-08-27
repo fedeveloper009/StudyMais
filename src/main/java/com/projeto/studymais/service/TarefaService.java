@@ -2,6 +2,7 @@ package com.projeto.studymais.service;
 
 import com.projeto.studymais.dto.tarefa.TarefaRequestDTO;
 import com.projeto.studymais.dto.tarefa.TarefaResponseDTO;
+import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Materia;
 import com.projeto.studymais.model.Tarefa;
 import com.projeto.studymais.model.Usuario;
@@ -9,7 +10,6 @@ import com.projeto.studymais.repository.MateriaRepository;
 import com.projeto.studymais.repository.TarefaRepository;
 import com.projeto.studymais.repository.UsuarioRepository;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,14 +59,14 @@ public class TarefaService {
 
     private Tarefa buscarEntidadePorId(Integer id) {
         return tarefaRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Tarefa não encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Tarefa nao encontrada."));
     }
 
     private void preencherTarefa(Tarefa tarefa, TarefaRequestDTO request) {
         Materia materia = materiaRepository.findById(request.materiaId())
-                .orElseThrow(() -> new NoSuchElementException("Matéria não encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Materia nao encontrada."));
         Usuario usuario = usuarioRepository.findById(request.usuarioId())
-                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
         tarefa.setTitulo(request.titulo());
         tarefa.setDescricao(request.descricao());
         tarefa.setDataEntrega(request.dataEntrega());
