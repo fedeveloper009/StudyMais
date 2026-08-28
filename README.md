@@ -37,7 +37,7 @@ Muitos estudantes enfrentam dificuldades para manter a consistência nos estudos
 ## 🔗 Repositórios do Projeto
 
 - 🖥️ **Frontend:** [StudyMais Web](https://github.com/fedeveloper009/StudyMais) (Em breve)
-- ⚙️ **Backend / API:** [StudyMais API (Link para o repositório Java)](https://github.com/fedeveloper009/StudyMais)
+- ⚙️ **Backend / API:** [StudyMais API (https://github.com/fedeveloper009/StudyMais)](https://github.com/fedeveloper009/StudyMais)
 
 ---
 
@@ -47,3 +47,45 @@ Muitos estudantes enfrentam dificuldades para manter a consistência nos estudos
 1. Clone o repositório da API:
    ```bash
    git clone [https://github.com/fedeveloper009/StudyMais](https://github.com/fedeveloper009/StudyMais)
+   ```
+
+## Autenticacao e integracao
+
+O cadastro e o login sao publicos. As demais rotas `/api/**` exigem um token JWT.
+
+### Cadastrar usuario
+
+```http
+POST /api/usuarios
+Content-Type: application/json
+```
+
+```json
+{
+  "nome": "Carlos",
+  "email": "carlos@email.com",
+  "senha": "123456"
+}
+```
+
+### Fazer login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "carlos@email.com",
+  "senha": "123456"
+}
+```
+
+A resposta contem um campo `token`. Envie-o nas demais requisicoes:
+
+```http
+Authorization: Bearer SEU_TOKEN
+```
+
+As origens permitidas pelo CORS sao configuradas em `CORS_ALLOWED_ORIGINS`, separadas por virgulas. Por padrao, a API aceita as portas locais mais comuns dos front-ends.
