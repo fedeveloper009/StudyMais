@@ -23,7 +23,8 @@ public class UsuarioDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado."));
 
         return User.withUsername(usuario.getEmail())
-                .password(usuario.getSenha())
+                // Contas Google nao possuem senha; o marcador impede autenticacao local.
+                .password(usuario.getSenha() == null ? "{noop}" : usuario.getSenha())
                 .roles("USER")
                 .build();
     }
