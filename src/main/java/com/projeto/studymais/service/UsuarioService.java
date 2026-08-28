@@ -2,6 +2,7 @@ package com.projeto.studymais.service;
 
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
+import com.projeto.studymais.exception.DuplicateEmailException;
 import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
@@ -12,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 public class UsuarioService {
@@ -32,9 +34,16 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponseDTO criar(UsuarioRequestDTO request) {
+        if (usuarioRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException();
+        }
         Usuario usuario = new Usuario();
         preencherUsuario(usuario, request);
-        return paraResponse(usuarioRepository.save(usuario));
+        try {
+            return paraResponse(usuarioRepository.save(usuario));
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateEmailException();
+        }
     }
 
     public UsuarioResponseDTO buscarPorId(Integer id) {
@@ -48,8 +57,16 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponseDTO atualizar(Integer id, UsuarioRequestDTO request) {
         Usuario usuario = buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter());
+        if (!Objects.equals(usuario.getEmail(), request.email())
+                && usuarioRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException();
+        }
         preencherUsuario(usuario, request);
-        return paraResponse(usuarioRepository.save(usuario));
+        try {
+            return paraResponse(usuarioRepository.save(usuario));
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateEmailException();
+        }
     }
 
     @Transactional

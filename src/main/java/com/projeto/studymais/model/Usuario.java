@@ -5,11 +5,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
     private String nome;
+    @Column(nullable = false, unique = true)
     private String email;
     private String senha;
     @Id
