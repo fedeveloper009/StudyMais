@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "usuarios")
@@ -14,6 +16,11 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
     private String senha;
+    @Column(name = "google_sub", unique = true)
+    private String googleSub;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider")
+    private AuthProvider authProvider = AuthProvider.LOCAL;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
@@ -40,6 +47,38 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public String getGoogleSub() {
+        return googleSub;
+    }
+
+    public void setGoogleSub(String googleSub) {
+        this.googleSub = googleSub;
+    }
+
+    public AuthProvider getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(AuthProvider authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    public AuthProvider getProvider() {
+        return authProvider;
+    }
+
+    public void setProvider(AuthProvider provider) {
+        this.authProvider = provider;
+    }
+
+    public AuthProvider getProvedor() {
+        return authProvider;
+    }
+
+    public void setProvedor(AuthProvider provedor) {
+        this.authProvider = provedor;
     }
 
     public int getUser_id() {

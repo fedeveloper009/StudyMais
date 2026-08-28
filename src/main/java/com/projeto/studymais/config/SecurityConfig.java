@@ -19,7 +19,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.projeto.studymais.security.JwtAuthenticationFilter;
 import com.projeto.studymais.security.JsonAuthenticationEntryPoint;
+import com.projeto.studymais.security.OAuth2AuthenticationFailureHandler;
+import com.projeto.studymais.security.OAuth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import java.util.Arrays;
 import java.util.List;
 
@@ -85,13 +88,16 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
             JsonAuthenticationEntryPoint authenticationEntryPoint,
-            AuthenticationProvider authenticationProvider
+            AuthenticationProvider authenticationProvider,
+            ObjectProvider<OAuth2AuthenticationSuccessHandler> successHandler,
+            ObjectProvider<OAuth2AuthenticationFailureHandler> failureHandler
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
                         .requestMatchers("/api/**").authenticated()
@@ -99,8 +105,18 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // OAuth2 usa a sessao apenas durante o handshake; a API continua autenticada por JWT.
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http.oauth2Login(oauth2 -> {
+            if (successHandler.getIfAvailable() != null) {
+                oauth2.successHandler(successHandler.getIfAvailable());
+            }
+            if (failureHandler.getIfAvailable() != null) {
+                oauth2.failureHandler(failureHandler.getIfAvailable());
+            }
+        });
 
         return http.build();
     }
