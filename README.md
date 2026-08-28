@@ -46,4 +46,4 @@ Muitos estudantes enfrentam dificuldades para manter a consistência nos estudos
 ### 1. Backend (API Java)
 1. Clone o repositório da API:
    ```bash
-   git clone [https://github.com/fedeveloper009/SEU-REPOSITORIO-JAVA.git](https://github.com/fedeveloper009/SEU-REPOSITORIO-JAVA.git)
+   git clone [https://github.com/fedeveloper009/StudyMais](https://github.com/fedeveloper009/StudyMais)
