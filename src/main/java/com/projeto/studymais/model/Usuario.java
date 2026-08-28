@@ -14,7 +14,7 @@ public class Usuario {
     private String senha;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int user_id;
+    private int userId;
 
     public String getNome() {
         return nome;
@@ -41,10 +41,10 @@ public class Usuario {
     }
 
     public int getUser_id() {
-        return user_id;
+        return userId;
     }
 
     public void setUser_id(int user_id) {
-        this.user_id = user_id;
+        this.userId = user_id;
     }
 }

@@ -13,13 +13,13 @@ import jakarta.persistence.Table;
 public class Materia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int materia_id;
+    private int materiaId;
     private String nomeMateria;
     private String descricao;
     private String cor;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Usuario user_id;
+    private Usuario usuario;
 
     public String getNomeMateria() {
         return nomeMateria;
@@ -46,18 +46,18 @@ public class Materia {
     }
 
     public Usuario getUser_id() {
-        return user_id;
+        return usuario;
     }
 
     public void setUser_id(Usuario user_id) {
-        this.user_id = user_id;
+        this.usuario = user_id;
     }
 
     public int getMateria_id() {
-        return materia_id;
+        return materiaId;
     }
 
     public void setMateria_id(int materia_id) {
-        this.materia_id = materia_id;
+        this.materiaId = materia_id;
     }
 }

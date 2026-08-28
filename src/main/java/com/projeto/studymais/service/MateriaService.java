@@ -6,8 +6,10 @@ import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Materia;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.MateriaRepository;
-import com.projeto.studymais.repository.UsuarioRepository;
+import com.projeto.studymais.security.UsuarioAutenticadoHelper;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,48 +17,60 @@ import org.springframework.transaction.annotation.Transactional;
 public class MateriaService {
 
     private final MateriaRepository materiaRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioAutenticadoHelper usuarioAutenticadoHelper;
 
-    public MateriaService(MateriaRepository materiaRepository, UsuarioRepository usuarioRepository) {
+    public MateriaService(
+            MateriaRepository materiaRepository,
+            UsuarioAutenticadoHelper usuarioAutenticadoHelper
+    ) {
         this.materiaRepository = materiaRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.usuarioAutenticadoHelper = usuarioAutenticadoHelper;
     }
 
     @Transactional
     public MateriaResponseDTO criar(MateriaRequestDTO request) {
+        Usuario usuario = usuarioAutenticadoHelper.obter();
         Materia materia = new Materia();
-        preencherMateria(materia, request);
+        preencherMateria(materia, request, usuario);
         return paraResponse(materiaRepository.save(materia));
     }
 
     public MateriaResponseDTO buscarPorId(Integer id) {
-        return paraResponse(buscarEntidadePorId(id));
+        return paraResponse(buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter()));
     }
 
     public List<MateriaResponseDTO> buscarTodos() {
-        return materiaRepository.findAll().stream().map(this::paraResponse).toList();
+        Usuario usuario = usuarioAutenticadoHelper.obter();
+        return materiaRepository.findAllByUsuario(usuario).stream().map(this::paraResponse).toList();
     }
 
     @Transactional
     public MateriaResponseDTO atualizar(Integer id, MateriaRequestDTO request) {
-        Materia materia = buscarEntidadePorId(id);
-        preencherMateria(materia, request);
+        Usuario usuario = usuarioAutenticadoHelper.obter();
+        Materia materia = buscarEntidadeDoUsuario(id, usuario);
+        preencherMateria(materia, request, usuario);
         return paraResponse(materiaRepository.save(materia));
     }
 
     @Transactional
     public void deletar(Integer id) {
-        materiaRepository.delete(buscarEntidadePorId(id));
+        materiaRepository.delete(buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter()));
     }
 
-    private Materia buscarEntidadePorId(Integer id) {
-        return materiaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Materia nao encontrada."));
+    private Materia buscarEntidadeDoUsuario(Integer id, Usuario usuario) {
+        return materiaRepository.findByMateriaIdAndUsuario(id, usuario)
+                .orElseThrow(() -> {
+                    if (materiaRepository.existsById(id)) {
+                        return new AccessDeniedException("Acesso negado.");
+                    }
+                    return new ResourceNotFoundException("Materia nao encontrada.");
+                });
     }
 
-    private void preencherMateria(Materia materia, MateriaRequestDTO request) {
-        Usuario usuario = usuarioRepository.findById(request.usuarioId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
+    private void preencherMateria(Materia materia, MateriaRequestDTO request, Usuario usuario) {
+        if (!Objects.equals(request.usuarioId(), usuario.getUser_id())) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
         materia.setNomeMateria(request.nomeMateria());
         materia.setDescricao(request.descricao());
         materia.setCor(request.cor());

@@ -5,6 +5,7 @@ import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
 import com.projeto.studymais.service.UsuarioService;
 import java.net.URI;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> criar(@RequestBody UsuarioRequestDTO request) {
+    public ResponseEntity<UsuarioResponseDTO> criar(@Valid @RequestBody UsuarioRequestDTO request) {
         UsuarioResponseDTO usuario = usuarioService.criar(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -49,7 +50,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> atualizar(
             @PathVariable Integer id,
-            @RequestBody UsuarioRequestDTO request
+            @Valid @RequestBody UsuarioRequestDTO request
     ) {
         return ResponseEntity.ok(usuarioService.atualizar(id, request));
     }

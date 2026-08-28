@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class Tarefa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int tarefa_id;
+    private int tarefaId;
     private String titulo;
     private String descricao;
     private LocalDate dataEntrega;
@@ -26,7 +26,7 @@ public class Tarefa {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Usuario user_id;
+    private Usuario usuario;
 
     @Enumerated(EnumType.STRING)
     private StatusTarefa status;
@@ -67,19 +67,19 @@ public class Tarefa {
     }
 
     public Usuario getUser_id() {
-        return user_id;
+        return usuario;
     }
 
     public void setUser_id(Usuario user_id) {
-        this.user_id = user_id;
+        this.usuario = user_id;
     }
 
     public int getTarefa_id() {
-        return tarefa_id;
+        return tarefaId;
     }
 
     public void setTarefa_id(int tarefa_id) {
-        this.tarefa_id = tarefa_id;
+        this.tarefaId = tarefa_id;
     }
 
     public StatusTarefa getStatus() {
