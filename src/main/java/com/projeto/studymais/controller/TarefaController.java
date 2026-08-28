@@ -5,6 +5,7 @@ import com.projeto.studymais.dto.tarefa.TarefaResponseDTO;
 import com.projeto.studymais.service.TarefaService;
 import java.net.URI;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,7 @@ public class TarefaController {
     }
 
     @PostMapping
-    public ResponseEntity<TarefaResponseDTO> criar(@RequestBody TarefaRequestDTO request) {
+    public ResponseEntity<TarefaResponseDTO> criar(@Valid @RequestBody TarefaRequestDTO request) {
         TarefaResponseDTO tarefa = tarefaService.criar(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -49,7 +50,7 @@ public class TarefaController {
     @PutMapping("/{id}")
     public ResponseEntity<TarefaResponseDTO> atualizar(
             @PathVariable Integer id,
-            @RequestBody TarefaRequestDTO request
+            @Valid @RequestBody TarefaRequestDTO request
     ) {
         return ResponseEntity.ok(tarefaService.atualizar(id, request));
     }

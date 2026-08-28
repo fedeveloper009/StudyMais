@@ -5,7 +5,11 @@ import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
 import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
+import com.projeto.studymais.security.UsuarioAutenticadoHelper;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UsuarioAutenticadoHelper usuarioAutenticadoHelper;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+            UsuarioAutenticadoHelper usuarioAutenticadoHelper
+    ) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.usuarioAutenticadoHelper = usuarioAutenticadoHelper;
     }
 
     @Transactional
@@ -26,34 +38,49 @@ public class UsuarioService {
     }
 
     public UsuarioResponseDTO buscarPorId(Integer id) {
-        return paraResponse(buscarEntidadePorId(id));
+        return paraResponse(buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter()));
     }
 
     public List<UsuarioResponseDTO> buscarTodos() {
-        return usuarioRepository.findAll().stream().map(this::paraResponse).toList();
+        return List.of(paraResponse(usuarioAutenticadoHelper.obter()));
     }
 
     @Transactional
     public UsuarioResponseDTO atualizar(Integer id, UsuarioRequestDTO request) {
-        Usuario usuario = buscarEntidadePorId(id);
+        Usuario usuario = buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter());
         preencherUsuario(usuario, request);
         return paraResponse(usuarioRepository.save(usuario));
     }
 
     @Transactional
     public void deletar(Integer id) {
-        usuarioRepository.delete(buscarEntidadePorId(id));
+        usuarioRepository.delete(buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter()));
     }
 
-    private Usuario buscarEntidadePorId(Integer id) {
-        return usuarioRepository.findById(id)
+    private Usuario buscarEntidadeDoUsuario(Integer id, Usuario usuarioAutenticado) {
+        Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
+        if (!Objects.equals(usuario.getUser_id(), usuarioAutenticado.getUser_id())) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
+        return usuario;
     }
 
     private void preencherUsuario(Usuario usuario, UsuarioRequestDTO request) {
         usuario.setNome(request.nome());
         usuario.setEmail(request.email());
-        usuario.setSenha(request.senha());
+        usuario.setSenha(codificarSenha(usuario.getSenha(), request.senha()));
+    }
+
+    private String codificarSenha(String senhaAtual, String senhaInformada) {
+        if (senhaInformada.equals(senhaAtual) || isBcryptHash(senhaInformada)) {
+            return senhaInformada;
+        }
+        return passwordEncoder.encode(senhaInformada);
+    }
+
+    private boolean isBcryptHash(String senha) {
+        return senha.matches("^\\$2[ayb]?\\$\\d{2}\\$[./A-Za-z0-9]{53}$");
     }
 
     private UsuarioResponseDTO paraResponse(Usuario usuario) {

@@ -1,17 +1,13 @@
-package com.projeto.studymais.dto.usuario;
+package com.projeto.studymais.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
-public record UsuarioRequestDTO(
-        @NotBlank(message = "O nome e obrigatorio.")
-        String nome,
+public record LoginRequestDTO(
         @NotBlank(message = "O email e obrigatorio.")
         @Email(message = "O email deve ser valido.")
         String email,
         @NotBlank(message = "A senha e obrigatoria.")
-        @Size(min = 6, message = "A senha deve ter no minimo 6 caracteres.")
         String senha
 ) {
 }

@@ -8,8 +8,10 @@ import com.projeto.studymais.model.Tarefa;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.MateriaRepository;
 import com.projeto.studymais.repository.TarefaRepository;
-import com.projeto.studymais.repository.UsuarioRepository;
+import com.projeto.studymais.security.UsuarioAutenticadoHelper;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,55 +20,69 @@ public class TarefaService {
 
     private final TarefaRepository tarefaRepository;
     private final MateriaRepository materiaRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioAutenticadoHelper usuarioAutenticadoHelper;
 
     public TarefaService(
             TarefaRepository tarefaRepository,
             MateriaRepository materiaRepository,
-            UsuarioRepository usuarioRepository
+            UsuarioAutenticadoHelper usuarioAutenticadoHelper
     ) {
         this.tarefaRepository = tarefaRepository;
         this.materiaRepository = materiaRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.usuarioAutenticadoHelper = usuarioAutenticadoHelper;
     }
 
     @Transactional
     public TarefaResponseDTO criar(TarefaRequestDTO request) {
+        Usuario usuario = usuarioAutenticadoHelper.obter();
         Tarefa tarefa = new Tarefa();
-        preencherTarefa(tarefa, request);
+        preencherTarefa(tarefa, request, usuario);
         return paraResponse(tarefaRepository.save(tarefa));
     }
 
     public TarefaResponseDTO buscarPorId(Integer id) {
-        return paraResponse(buscarEntidadePorId(id));
+        return paraResponse(buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter()));
     }
 
     public List<TarefaResponseDTO> buscarTodos() {
-        return tarefaRepository.findAll().stream().map(this::paraResponse).toList();
+        Usuario usuario = usuarioAutenticadoHelper.obter();
+        return tarefaRepository.findAllByUsuario(usuario).stream().map(this::paraResponse).toList();
     }
 
     @Transactional
     public TarefaResponseDTO atualizar(Integer id, TarefaRequestDTO request) {
-        Tarefa tarefa = buscarEntidadePorId(id);
-        preencherTarefa(tarefa, request);
+        Usuario usuario = usuarioAutenticadoHelper.obter();
+        Tarefa tarefa = buscarEntidadeDoUsuario(id, usuario);
+        preencherTarefa(tarefa, request, usuario);
         return paraResponse(tarefaRepository.save(tarefa));
     }
 
     @Transactional
     public void deletar(Integer id) {
-        tarefaRepository.delete(buscarEntidadePorId(id));
+        tarefaRepository.delete(buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter()));
     }
 
-    private Tarefa buscarEntidadePorId(Integer id) {
-        return tarefaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tarefa nao encontrada."));
+    private Tarefa buscarEntidadeDoUsuario(Integer id, Usuario usuario) {
+        return tarefaRepository.findByTarefaIdAndUsuario(id, usuario)
+                .orElseThrow(() -> {
+                    if (tarefaRepository.existsById(id)) {
+                        return new AccessDeniedException("Acesso negado.");
+                    }
+                    return new ResourceNotFoundException("Tarefa nao encontrada.");
+                });
     }
 
-    private void preencherTarefa(Tarefa tarefa, TarefaRequestDTO request) {
-        Materia materia = materiaRepository.findById(request.materiaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Materia nao encontrada."));
-        Usuario usuario = usuarioRepository.findById(request.usuarioId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
+    private void preencherTarefa(Tarefa tarefa, TarefaRequestDTO request, Usuario usuario) {
+        if (!Objects.equals(request.usuarioId(), usuario.getUser_id())) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
+        Materia materia = materiaRepository.findByMateriaIdAndUsuario(request.materiaId(), usuario)
+                .orElseThrow(() -> {
+                    if (materiaRepository.existsById(request.materiaId())) {
+                        return new AccessDeniedException("Acesso negado.");
+                    }
+                    return new ResourceNotFoundException("Materia nao encontrada.");
+                });
         tarefa.setTitulo(request.titulo());
         tarefa.setDescricao(request.descricao());
         tarefa.setDataEntrega(request.dataEntrega());

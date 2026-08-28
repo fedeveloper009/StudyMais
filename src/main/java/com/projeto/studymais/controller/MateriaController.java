@@ -5,6 +5,7 @@ import com.projeto.studymais.dto.materia.MateriaResponseDTO;
 import com.projeto.studymais.service.MateriaService;
 import java.net.URI;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,7 @@ public class MateriaController {
     }
 
     @PostMapping
-    public ResponseEntity<MateriaResponseDTO> criar(@RequestBody MateriaRequestDTO request) {
+    public ResponseEntity<MateriaResponseDTO> criar(@Valid @RequestBody MateriaRequestDTO request) {
         MateriaResponseDTO materia = materiaService.criar(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -49,7 +50,7 @@ public class MateriaController {
     @PutMapping("/{id}")
     public ResponseEntity<MateriaResponseDTO> atualizar(
             @PathVariable Integer id,
-            @RequestBody MateriaRequestDTO request
+            @Valid @RequestBody MateriaRequestDTO request
     ) {
         return ResponseEntity.ok(materiaService.atualizar(id, request));
     }
