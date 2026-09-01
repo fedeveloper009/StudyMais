@@ -1,6 +1,7 @@
 package com.projeto.studymais;
 
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
+import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
 import com.projeto.studymais.exception.DuplicateEmailException;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
@@ -92,6 +93,33 @@ class UsuarioServiceTest {
                         new UsuarioRequestDTO("Ana", "bruno@example.com", "senha123")
                 )
         );
+    }
+
+    @Test
+    void criarPreservaXpDiasDeSequenciaTempoEstudadoMateriaEConquistas() {
+        when(usuarioRepository.existsByEmail("ana@example.com")).thenReturn(false);
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UsuarioResponseDTO response = usuarioService.criar(
+                new UsuarioRequestDTO(
+                        "Ana",
+                        "ana@example.com",
+                        "senha123",
+                        320,
+                        8,
+                        5400L,
+                        "Matematica",
+                        java.util.List.of("Primeiro passo", "Constancia")
+                )
+        );
+
+        assertDoesNotThrow(() -> {
+            org.junit.jupiter.api.Assertions.assertEquals(320, response.xp());
+            org.junit.jupiter.api.Assertions.assertEquals(8, response.diasDeSequencia());
+            org.junit.jupiter.api.Assertions.assertEquals(5400L, response.tempoEstudado());
+            org.junit.jupiter.api.Assertions.assertEquals("Matematica", response.materiaEstudada());
+            org.junit.jupiter.api.Assertions.assertEquals(java.util.List.of("Primeiro passo", "Constancia"), response.conquistas());
+        });
     }
 
     private Usuario usuario(int id, String email) {

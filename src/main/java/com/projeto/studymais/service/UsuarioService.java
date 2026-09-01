@@ -87,6 +87,11 @@ public class UsuarioService {
         usuario.setNome(request.nome());
         usuario.setEmail(request.email());
         usuario.setSenha(codificarSenha(usuario.getSenha(), request.senha()));
+        usuario.setXp(request.xp() == null ? usuario.getXp() : request.xp());
+        usuario.setDiasDeSequencia(request.diasDeSequencia() == null ? usuario.getDiasDeSequencia() : request.diasDeSequencia());
+        usuario.setTempoEstudado(request.tempoEstudado() == null ? usuario.getTempoEstudado() : request.tempoEstudado());
+        usuario.setMateriaEstudada(request.materiaEstudada() == null ? usuario.getMateriaEstudada() : request.materiaEstudada());
+        usuario.setConquistas(request.conquistas() == null ? usuario.getConquistas() : request.conquistas());
     }
 
     private String codificarSenha(String senhaAtual, String senhaInformada) {
@@ -101,6 +106,15 @@ public class UsuarioService {
     }
 
     private UsuarioResponseDTO paraResponse(Usuario usuario) {
-        return new UsuarioResponseDTO(usuario.getUser_id(), usuario.getNome(), usuario.getEmail());
+        return new UsuarioResponseDTO(
+                usuario.getUser_id(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getXp(),
+                usuario.getDiasDeSequencia(),
+                usuario.getTempoEstudado(),
+                usuario.getMateriaEstudada(),
+                usuario.getConquistas()
+        );
     }
 }
