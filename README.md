@@ -163,6 +163,22 @@ PUT    /tarefas/{id}
 DELETE /tarefas/{id}
 ```
 
+### 🖥️ Plataformas
+
+Permite cadastrar plataformas de estudo vinculadas a um usuário.
+
+Operações:
+
+```http
+POST   /api/plataformas
+GET    /api/plataformas
+GET    /api/plataformas/{id}
+PUT    /api/plataformas/{id}
+DELETE /api/plataformas/{id}
+```
+
+Cada plataforma possui `nomePlataforma`, `descricao`, `url` e `usuarioId`. Um usuário pode possuir várias plataformas, e cada plataforma pertence a exatamente um usuário.
+
 > **Observação:** os endpoints acima devem ser ajustados caso os `@RequestMapping` e `@GetMapping`, `@PostMapping`, etc. presentes nos controllers utilizem caminhos diferentes.
 
 ---

@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,8 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
+    @OneToMany(mappedBy = "usuario")
+    private List<Plataforma> plataformas = new ArrayList<>();
 
     public String getNome() {
         return nome;
@@ -145,5 +148,13 @@ public class Usuario {
 
     public void setUser_id(int user_id) {
         this.userId = user_id;
+    }
+
+    public List<Plataforma> getPlataformas() {
+        return plataformas;
+    }
+
+    public void setPlataformas(List<Plataforma> plataformas) {
+        this.plataformas = plataformas == null ? new ArrayList<>() : plataformas;
     }
 }
