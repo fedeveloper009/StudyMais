@@ -61,6 +61,14 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.CONFLICT, "Operacao viola uma restricao dos dados.", request);
     }
 
+    @ExceptionHandler(StorageOperationException.class)
+    public ResponseEntity<ApiError> handleStorageOperation(
+            StorageOperationException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiError> handleAuthentication(
             AuthenticationException exception,

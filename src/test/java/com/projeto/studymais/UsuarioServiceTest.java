@@ -3,10 +3,12 @@ package com.projeto.studymais;
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
 import com.projeto.studymais.dto.usuario.AtualizarNomeRequestDTO;
+import com.projeto.studymais.dto.usuario.AlterarSenhaRequestDTO;
 import com.projeto.studymais.exception.DuplicateEmailException;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
 import com.projeto.studymais.security.UsuarioAutenticadoHelper;
+import com.projeto.studymais.service.AvatarStorageService;
 import com.projeto.studymais.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,11 +39,19 @@ class UsuarioServiceTest {
     @Mock
     private UsuarioAutenticadoHelper usuarioAutenticadoHelper;
 
+    @Mock
+    private AvatarStorageService avatarStorageService;
+
     private UsuarioService usuarioService;
 
     @BeforeEach
     void setUp() {
-        usuarioService = new UsuarioService(usuarioRepository, passwordEncoder, usuarioAutenticadoHelper);
+        usuarioService = new UsuarioService(
+                usuarioRepository,
+                passwordEncoder,
+                usuarioAutenticadoHelper,
+                avatarStorageService
+        );
         lenient().when(passwordEncoder.encode(any()))
                 .thenReturn("$2a$10$12345678901234567890123456789012345678901234567890123");
     }
@@ -182,6 +193,129 @@ class UsuarioServiceTest {
                 com.projeto.studymais.exception.ResourceNotFoundException.class,
                 () -> usuarioService.atualizarNome(2, new AtualizarNomeRequestDTO("Novo Nome"))
         );
+    }
+
+    @Test
+    void alterarSenhaValidaSenhaAtualECodificaSomenteANovaSenha() {
+        Usuario atual = usuario(1, "ana@example.com");
+        atual.setXp(320);
+        atual.setDiasDeSequencia(8);
+        atual.setTempoEstudado(5400L);
+        atual.setMateriaEstudada("Matematica");
+        atual.setConquistas(java.util.List.of("Constancia"));
+        String senhaAnterior = atual.getSenha();
+        String senhaCodificada = "$2a$10$novo-hash";
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+        when(passwordEncoder.matches("senha123", senhaAnterior)).thenReturn(true);
+        when(passwordEncoder.encode("nova123")).thenReturn(senhaCodificada);
+        when(usuarioRepository.save(atual)).thenReturn(atual);
+
+        UsuarioResponseDTO response = usuarioService.alterarSenha(
+                1,
+                new AlterarSenhaRequestDTO("senha123", "nova123", "nova123")
+        );
+
+        assertEquals(senhaCodificada, atual.getSenha());
+        assertEquals("ana@example.com", response.email());
+        assertEquals(320, response.xp());
+        assertEquals(8, response.diasDeSequencia());
+        assertEquals(5400L, response.tempoEstudado());
+        assertEquals("Matematica", response.materiaEstudada());
+        assertEquals(java.util.List.of("Constancia"), response.conquistas());
+        verify(passwordEncoder).matches("senha123", senhaAnterior);
+        verify(passwordEncoder).encode("nova123");
+        verify(usuarioRepository).save(atual);
+    }
+
+    @Test
+    void alterarSenhaRejeitaSenhaAtualInvalidaSemSalvar() {
+        Usuario atual = usuario(1, "ana@example.com");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+        when(passwordEncoder.matches("errada", atual.getSenha())).thenReturn(false);
+
+        assertThrows(
+                org.springframework.security.authentication.BadCredentialsException.class,
+                () -> usuarioService.alterarSenha(
+                        1,
+                        new AlterarSenhaRequestDTO("errada", "nova123", "nova123")
+                )
+        );
+        verify(usuarioRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+        verify(passwordEncoder, org.mockito.Mockito.never()).encode("nova123");
+    }
+
+    @Test
+    void alterarSenhaRejeitaConfirmacaoDiferente() {
+        Usuario atual = usuario(1, "ana@example.com");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioService.alterarSenha(
+                        1,
+                        new AlterarSenhaRequestDTO("senha123", "nova123", "outra123")
+                )
+        );
+        verify(passwordEncoder, org.mockito.Mockito.never()).matches(
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString()
+        );
+    }
+
+    @Test
+    void alterarSenhaImpedeAlterarOutroUsuario() {
+        Usuario autenticado = usuario(1, "ana@example.com");
+        Usuario outroUsuario = usuario(2, "bruno@example.com");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(autenticado);
+        when(usuarioRepository.findById(2)).thenReturn(java.util.Optional.of(outroUsuario));
+
+        assertThrows(
+                org.springframework.security.access.AccessDeniedException.class,
+                () -> usuarioService.alterarSenha(
+                        2,
+                        new AlterarSenhaRequestDTO("senha123", "nova123", "nova123")
+                )
+        );
+    }
+
+    @Test
+    void alterarFotoPerfilSalvaSomenteAUrlDaFotoDoProprioUsuario() {
+        Usuario atual = usuario(1, "ana@example.com");
+        atual.setFotoPerfilUrl(null);
+        MockMultipartFile foto = new MockMultipartFile(
+                "foto",
+                "avatar.png",
+                "image/png",
+                new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}
+        );
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+        when(avatarStorageService.upload(1, foto)).thenReturn("https://storage.example/avatar");
+        when(usuarioRepository.save(atual)).thenReturn(atual);
+
+        UsuarioResponseDTO response = usuarioService.alterarFotoPerfil(1, foto);
+
+        assertEquals("https://storage.example/avatar", response.fotoPerfilUrl());
+        verify(avatarStorageService).upload(1, foto);
+        verify(usuarioRepository).save(atual);
+    }
+
+    @Test
+    void removerFotoPerfilApagaArquivoEReferenciaDoProprioUsuario() {
+        Usuario atual = usuario(1, "ana@example.com");
+        atual.setFotoPerfilUrl("https://storage.example/avatar");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+        when(usuarioRepository.save(atual)).thenReturn(atual);
+
+        UsuarioResponseDTO response = usuarioService.removerFotoPerfil(1);
+
+        assertEquals(null, response.fotoPerfilUrl());
+        verify(avatarStorageService).delete(1);
+        verify(usuarioRepository).save(atual);
     }
 
     @Test

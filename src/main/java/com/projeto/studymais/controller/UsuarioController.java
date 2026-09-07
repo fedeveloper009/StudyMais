@@ -3,6 +3,7 @@ package com.projeto.studymais.controller;
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
 import com.projeto.studymais.dto.usuario.AtualizarNomeRequestDTO;
+import com.projeto.studymais.dto.usuario.AlterarSenhaRequestDTO;
 import com.projeto.studymais.service.UsuarioService;
 import java.net.URI;
 import java.util.List;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
@@ -62,6 +65,27 @@ public class UsuarioController {
             @Valid @RequestBody AtualizarNomeRequestDTO request
     ) {
         return ResponseEntity.ok(usuarioService.atualizarNome(id, request));
+    }
+
+    @PutMapping("/{id}/senha")
+    public ResponseEntity<UsuarioResponseDTO> alterarSenha(
+            @PathVariable Integer id,
+            @Valid @RequestBody AlterarSenhaRequestDTO request
+    ) {
+        return ResponseEntity.ok(usuarioService.alterarSenha(id, request));
+    }
+
+    @PostMapping(value = "/{id}/foto", consumes = "multipart/form-data")
+    public ResponseEntity<UsuarioResponseDTO> alterarFotoPerfil(
+            @PathVariable Integer id,
+            @RequestPart("foto") MultipartFile foto
+    ) {
+        return ResponseEntity.ok(usuarioService.alterarFotoPerfil(id, foto));
+    }
+
+    @DeleteMapping("/{id}/foto")
+    public ResponseEntity<UsuarioResponseDTO> removerFotoPerfil(@PathVariable Integer id) {
+        return ResponseEntity.ok(usuarioService.removerFotoPerfil(id));
     }
 
     @DeleteMapping("/{id}")
