@@ -2,6 +2,7 @@ package com.projeto.studymais.controller;
 
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
+import com.projeto.studymais.dto.usuario.AtualizarNomeRequestDTO;
 import com.projeto.studymais.service.UsuarioService;
 import java.net.URI;
 import java.util.List;
@@ -53,6 +54,14 @@ public class UsuarioController {
             @Valid @RequestBody UsuarioRequestDTO request
     ) {
         return ResponseEntity.ok(usuarioService.atualizar(id, request));
+    }
+
+    @PutMapping("/{id}/nome")
+    public ResponseEntity<UsuarioResponseDTO> atualizarNome(
+            @PathVariable Integer id,
+            @Valid @RequestBody AtualizarNomeRequestDTO request
+    ) {
+        return ResponseEntity.ok(usuarioService.atualizarNome(id, request));
     }
 
     @DeleteMapping("/{id}")

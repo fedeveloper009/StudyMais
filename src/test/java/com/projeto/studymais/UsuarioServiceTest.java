@@ -2,6 +2,7 @@ package com.projeto.studymais;
 
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
+import com.projeto.studymais.dto.usuario.AtualizarNomeRequestDTO;
 import com.projeto.studymais.exception.DuplicateEmailException;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -92,6 +94,93 @@ class UsuarioServiceTest {
                         1,
                         new UsuarioRequestDTO("Ana", "bruno@example.com", "senha123")
                 )
+        );
+    }
+
+    @Test
+    void atualizarNomePermiteAlterarSomenteOProprioNome() {
+        Usuario atual = usuario(1, "ana@example.com");
+        atual.setXp(320);
+        atual.setDiasDeSequencia(8);
+        atual.setTempoEstudado(5400L);
+        atual.setMateriaEstudada("Matematica");
+        atual.setConquistas(java.util.List.of("Constancia"));
+        String senha = atual.getSenha();
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+        when(usuarioRepository.atualizarNomePorId(1, "Novo Nome")).thenReturn(1);
+
+        UsuarioResponseDTO response = usuarioService.atualizarNome(
+                1,
+                new AtualizarNomeRequestDTO("  Novo Nome  ")
+        );
+
+        assertEquals("Novo Nome", response.nome());
+        assertEquals("ana@example.com", response.email());
+        assertEquals(320, response.xp());
+        assertEquals(8, response.diasDeSequencia());
+        assertEquals(5400L, response.tempoEstudado());
+        assertEquals("Matematica", response.materiaEstudada());
+        assertEquals(java.util.List.of("Constancia"), response.conquistas());
+        assertEquals(senha, atual.getSenha());
+        verify(usuarioRepository).atualizarNomePorId(1, "Novo Nome");
+    }
+
+    @Test
+    void atualizarNomeRejeitaUsuarioNaoAutenticado() {
+        when(usuarioAutenticadoHelper.obter())
+                .thenThrow(new org.springframework.security.authentication.AuthenticationCredentialsNotFoundException(
+                        "Autenticacao necessaria."
+                ));
+
+        assertThrows(
+                org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class,
+                () -> usuarioService.atualizarNome(1, new AtualizarNomeRequestDTO("Novo Nome"))
+        );
+    }
+
+    @Test
+    void atualizarNomeImpedeAlterarOutroUsuario() {
+        Usuario autenticado = usuario(1, "ana@example.com");
+        Usuario outroUsuario = usuario(2, "bruno@example.com");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(autenticado);
+        when(usuarioRepository.findById(2)).thenReturn(java.util.Optional.of(outroUsuario));
+
+        assertThrows(
+                org.springframework.security.access.AccessDeniedException.class,
+                () -> usuarioService.atualizarNome(2, new AtualizarNomeRequestDTO("Novo Nome"))
+        );
+    }
+
+    @Test
+    void atualizarNomeRejeitaNomeInvalido() {
+        Usuario atual = usuario(1, "ana@example.com");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(atual);
+        when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(atual));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioService.atualizarNome(1, new AtualizarNomeRequestDTO(null))
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioService.atualizarNome(1, new AtualizarNomeRequestDTO(" "))
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioService.atualizarNome(1, new AtualizarNomeRequestDTO("A".repeat(101)))
+        );
+    }
+
+    @Test
+    void atualizarNomeRetorna404ParaUsuarioInexistente() {
+        Usuario autenticado = usuario(1, "ana@example.com");
+        when(usuarioAutenticadoHelper.obter()).thenReturn(autenticado);
+        when(usuarioRepository.findById(2)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(
+                com.projeto.studymais.exception.ResourceNotFoundException.class,
+                () -> usuarioService.atualizarNome(2, new AtualizarNomeRequestDTO("Novo Nome"))
         );
     }
 

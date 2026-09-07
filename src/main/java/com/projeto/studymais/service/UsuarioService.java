@@ -2,6 +2,7 @@ package com.projeto.studymais.service;
 
 import com.projeto.studymais.dto.usuario.UsuarioRequestDTO;
 import com.projeto.studymais.dto.usuario.UsuarioResponseDTO;
+import com.projeto.studymais.dto.usuario.AtualizarNomeRequestDTO;
 import com.projeto.studymais.exception.DuplicateEmailException;
 import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Usuario;
@@ -67,6 +68,19 @@ public class UsuarioService {
         } catch (DataIntegrityViolationException exception) {
             throw new DuplicateEmailException();
         }
+    }
+
+    @Transactional
+    public UsuarioResponseDTO atualizarNome(Integer id, AtualizarNomeRequestDTO request) {
+        Usuario usuarioAutenticado = usuarioAutenticadoHelper.obter();
+        Usuario usuario = buscarEntidadeDoUsuario(id, usuarioAutenticado);
+        String nome = request.nome() == null ? null : request.nome().trim();
+        if (nome == null || nome.length() < 2 || nome.length() > 100) {
+            throw new IllegalArgumentException("O nome deve ter entre 2 e 100 caracteres.");
+        }
+        usuarioRepository.atualizarNomePorId(usuario.getUser_id(), nome);
+        usuario.setNome(nome);
+        return paraResponse(usuario);
     }
 
     @Transactional
