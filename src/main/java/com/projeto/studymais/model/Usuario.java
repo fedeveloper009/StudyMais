@@ -44,7 +44,7 @@ public class Usuario {
     @Column(name = "materia_estudada")
     private String materiaEstudada;
     @Column(name = "foto_perfil_url", length = 1000)
-    private String fotoPerfilUrl;
+    private String fotoUrl;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "usuario_conquistas", joinColumns = @JoinColumn(name = "usuario_id"))
     @Column(name = "conquista")
@@ -160,11 +160,19 @@ public class Usuario {
     }
 
     public String getFotoPerfilUrl() {
-        return fotoPerfilUrl;
+        return fotoUrl;
     }
 
     public void setFotoPerfilUrl(String fotoPerfilUrl) {
-        this.fotoPerfilUrl = fotoPerfilUrl;
+        this.fotoUrl = fotoPerfilUrl;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
     }
 
     public List<String> getConquistas() {
