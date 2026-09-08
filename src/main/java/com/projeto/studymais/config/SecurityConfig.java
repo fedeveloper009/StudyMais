@@ -96,7 +96,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/verify-email/**",
+                                "/api/auth/password-reset/**",
+                                "/api/auth/verificar-email",
+                                "/api/auth/reenviar-verificacao",
+                                "/api/auth/esqueci-senha",
+                                "/api/auth/redefinir-senha",
+                                "/api/auth/email-change/confirm"
+                        ).permitAll()
+                        .requestMatchers("/api/auth/email-change/request").authenticated()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()

@@ -10,5 +10,6 @@ public interface PlataformaRepository extends JpaRepository<Plataforma, Integer>
 
     List<Plataforma> findAllByUsuario(Usuario usuario);
 
+    long countByUsuario(Usuario usuario);
     Optional<Plataforma> findByPlataformaIdAndUsuario(Integer plataformaId, Usuario usuario);
 }

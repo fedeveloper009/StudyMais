@@ -23,11 +23,18 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
     private String senha;
+    // Mantem contas existentes utilizaveis ao adicionar a coluna; novos usuarios
+    // recebem false explicitamente no fluxo de cadastro.
+    @Column(name = "email_verificado", nullable = false, columnDefinition = "boolean default true")
+    private boolean emailVerificado = false;
     @Column(name = "google_sub", unique = true)
     private String googleSub;
     @Enumerated(EnumType.STRING)
     @Column(name = "auth_provider")
     private AuthProvider authProvider = AuthProvider.LOCAL;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(20) default 'FREE'")
+    private Plano plano = Plano.FREE;
     @Column(nullable = false)
     private Integer xp = 0;
     @Column(name = "dias_de_sequencia", nullable = false)
@@ -72,6 +79,14 @@ public class Usuario {
         this.senha = senha;
     }
 
+    public boolean isEmailVerificado() {
+        return emailVerificado;
+    }
+
+    public void setEmailVerificado(boolean emailVerificado) {
+        this.emailVerificado = emailVerificado;
+    }
+
     public String getGoogleSub() {
         return googleSub;
     }
@@ -102,6 +117,14 @@ public class Usuario {
 
     public void setProvedor(AuthProvider provedor) {
         this.authProvider = provedor;
+    }
+
+    public Plano getPlano() {
+        return plano == null ? Plano.FREE : plano;
+    }
+
+    public void setPlano(Plano plano) {
+        this.plano = plano == null ? Plano.FREE : plano;
     }
 
     public Integer getXp() {

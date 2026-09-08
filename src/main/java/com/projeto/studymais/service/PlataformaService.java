@@ -6,6 +6,7 @@ import com.projeto.studymais.exception.ResourceNotFoundException;
 import com.projeto.studymais.model.Plataforma;
 import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.PlataformaRepository;
+import com.projeto.studymais.repository.UsuarioRepository;
 import com.projeto.studymais.security.UsuarioAutenticadoHelper;
 import java.util.List;
 import java.util.Objects;
@@ -18,18 +19,30 @@ public class PlataformaService {
 
     private final PlataformaRepository plataformaRepository;
     private final UsuarioAutenticadoHelper usuarioAutenticadoHelper;
+    private final UsuarioRepository usuarioRepository;
+    private final LimitePlanoService limitePlanoService;
 
     public PlataformaService(
             PlataformaRepository plataformaRepository,
-            UsuarioAutenticadoHelper usuarioAutenticadoHelper
+            UsuarioAutenticadoHelper usuarioAutenticadoHelper,
+            UsuarioRepository usuarioRepository,
+            LimitePlanoService limitePlanoService
     ) {
         this.plataformaRepository = plataformaRepository;
         this.usuarioAutenticadoHelper = usuarioAutenticadoHelper;
+        this.usuarioRepository = usuarioRepository;
+        this.limitePlanoService = limitePlanoService;
     }
 
     @Transactional
     public PlataformaResponseDTO criar(PlataformaRequestDTO request) {
-        Usuario usuario = usuarioAutenticadoHelper.obter();
+        Usuario usuarioAutenticado = usuarioAutenticadoHelper.obter();
+        Usuario usuario = usuarioRepository.findByIdForUpdate(usuarioAutenticado.getUser_id())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario nao encontrado."));
+        limitePlanoService.validarCriacao(
+                usuario.getPlano(),
+                plataformaRepository.countByUsuario(usuario)
+        );
         Plataforma plataforma = new Plataforma();
         preencherPlataforma(plataforma, request, usuario);
         return paraResponse(plataformaRepository.save(plataforma));

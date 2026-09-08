@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class UsuarioService {
@@ -26,6 +27,12 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioAutenticadoHelper usuarioAutenticadoHelper;
     private final AvatarStorageService avatarStorageService;
+    private final ContaSecurityService contaSecurityService;
+
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
+                          UsuarioAutenticadoHelper usuarioAutenticadoHelper) {
+        this(usuarioRepository, passwordEncoder, usuarioAutenticadoHelper, null, null);
+    }
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
@@ -33,10 +40,31 @@ public class UsuarioService {
             UsuarioAutenticadoHelper usuarioAutenticadoHelper,
             AvatarStorageService avatarStorageService
     ) {
+        this(usuarioRepository, passwordEncoder, usuarioAutenticadoHelper, avatarStorageService, null);
+    }
+
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+            UsuarioAutenticadoHelper usuarioAutenticadoHelper,
+            ContaSecurityService contaSecurityService
+    ) {
+        this(usuarioRepository, passwordEncoder, usuarioAutenticadoHelper, null, contaSecurityService);
+    }
+
+    @Autowired
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+            UsuarioAutenticadoHelper usuarioAutenticadoHelper,
+            AvatarStorageService avatarStorageService,
+            ContaSecurityService contaSecurityService
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.usuarioAutenticadoHelper = usuarioAutenticadoHelper;
         this.avatarStorageService = avatarStorageService;
+        this.contaSecurityService = contaSecurityService;
     }
 
     @Transactional
@@ -45,9 +73,14 @@ public class UsuarioService {
             throw new DuplicateEmailException();
         }
         Usuario usuario = new Usuario();
+        usuario.setEmailVerificado(false);
         preencherUsuario(usuario, request);
         try {
-            return paraResponse(usuarioRepository.save(usuario));
+            Usuario salvo = usuarioRepository.save(usuario);
+            if (contaSecurityService != null) {
+                contaSecurityService.solicitarVerificacao(salvo.getEmail());
+            }
+            return paraResponse(salvo);
         } catch (DataIntegrityViolationException exception) {
             throw new DuplicateEmailException();
         }
@@ -64,9 +97,11 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponseDTO atualizar(Integer id, UsuarioRequestDTO request) {
         Usuario usuario = buscarEntidadeDoUsuario(id, usuarioAutenticadoHelper.obter());
-        if (!Objects.equals(usuario.getEmail(), request.email())
-                && usuarioRepository.existsByEmail(request.email())) {
-            throw new DuplicateEmailException();
+        if (!Objects.equals(usuario.getEmail(), request.email())) {
+            if (usuarioRepository.existsByEmail(request.email())) {
+                throw new DuplicateEmailException();
+            }
+            throw new IllegalArgumentException("Use o fluxo de alteracao de email para trocar o email.");
         }
         preencherUsuario(usuario, request);
         try {
@@ -155,14 +190,7 @@ public class UsuarioService {
     }
 
     private String codificarSenha(String senhaAtual, String senhaInformada) {
-        if (senhaInformada.equals(senhaAtual) || isBcryptHash(senhaInformada)) {
-            return senhaInformada;
-        }
         return passwordEncoder.encode(senhaInformada);
-    }
-
-    private boolean isBcryptHash(String senha) {
-        return senha.matches("^\\$2[ayb]?\\$\\d{2}\\$[./A-Za-z0-9]{53}$");
     }
 
     private UsuarioResponseDTO paraResponse(Usuario usuario) {

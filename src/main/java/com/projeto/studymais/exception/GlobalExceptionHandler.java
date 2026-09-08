@@ -85,6 +85,14 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.FORBIDDEN, "Acesso negado.", request);
     }
 
+    @ExceptionHandler(LimitePlataformasException.class)
+    public ResponseEntity<ApiError> handlePlatformLimit(
+            LimitePlataformasException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.FORBIDDEN, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception exception, HttpServletRequest request) {
         return response(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno do servidor.", request);

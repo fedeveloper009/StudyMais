@@ -24,6 +24,7 @@ public class GoogleUserCreationService {
         usuario.setGoogleSub(googleSub);
         usuario.setAuthProvider(AuthProvider.GOOGLE);
         usuario.setSenha(null);
+        usuario.setEmailVerificado(true);
         return usuarioRepository.saveAndFlush(usuario);
     }
 }

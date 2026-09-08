@@ -45,6 +45,7 @@ public class GoogleUserService {
             }
             porEmail.setGoogleSub(googleSub);
             porEmail.setAuthProvider(AuthProvider.GOOGLE);
+            porEmail.setEmailVerificado(true);
             if (porEmail.getNome() == null || porEmail.getNome().isBlank()) {
                 porEmail.setNome(nome);
             }

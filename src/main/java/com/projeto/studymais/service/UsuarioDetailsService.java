@@ -25,6 +25,7 @@ public class UsuarioDetailsService implements UserDetailsService {
         return User.withUsername(usuario.getEmail())
                 // Contas Google nao possuem senha; o marcador impede autenticacao local.
                 .password(usuario.getSenha() == null ? "{noop}" : usuario.getSenha())
+                .disabled(!usuario.isEmailVerificado())
                 .roles("USER")
                 .build();
     }

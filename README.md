@@ -127,6 +127,30 @@ PUT    /usuarios/{id}
 DELETE /usuarios/{id}
 ```
 
+### 🔐 Verificação, alteração de e-mail e recuperação de senha
+
+Após o cadastro, um link de verificação é enviado por e-mail. Os tokens são
+armazenados somente como hash, expiram em 30 minutos e podem ser usados uma única vez.
+
+```http
+POST /api/auth/verify-email/request
+POST /api/auth/verify-email
+POST /api/auth/email-change/request    # requer JWT
+POST /api/auth/email-change/confirm
+POST /api/auth/password-reset/request
+POST /api/auth/password-reset/confirm
+GET  /api/auth/verificar-email?token=...
+POST /api/auth/reenviar-verificacao
+POST /api/auth/esqueci-senha
+POST /api/auth/redefinir-senha
+```
+
+No ambiente atual, `DevEmailService` registra no log o destinatario, o tipo e o
+link de desenvolvimento. O fluxo nao depende de SMTP ou de um servico pago.
+Configure apenas `FRONTEND_URL` para ajustar os links registrados. Uma futura
+implementacao real pode substituir `DevEmailService` sem alterar o controller
+ou `ContaSecurityService`.
+
 ### 📚 Matérias
 
 Permite organizar os estudos por disciplinas ou matérias.
@@ -178,6 +202,19 @@ DELETE /api/plataformas/{id}
 ```
 
 Cada plataforma possui `nomePlataforma`, `descricao`, `url` e `usuarioId`. Um usuário pode possuir várias plataformas, e cada plataforma pertence a exatamente um usuário.
+
+Os limites são aplicados no backend conforme o plano do usuário:
+
+| Plano | Limite |
+|---|---:|
+| FREE | 5 plataformas |
+| PRO | 10 plataformas |
+| PREMIUM | ilimitado |
+
+Novos usuários recebem `FREE`. A API conta as plataformas diretamente no banco
+antes da criação e retorna `403 Forbidden` quando o limite é atingido. O plano
+é armazenado como enum em `usuarios.plano`; pagamentos e alteração automática
+de plano ainda não fazem parte desta etapa.
 
 > **Observação:** os endpoints acima devem ser ajustados caso os `@RequestMapping` e `@GetMapping`, `@PostMapping`, etc. presentes nos controllers utilizem caminhos diferentes.
 
