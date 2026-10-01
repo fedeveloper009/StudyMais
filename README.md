@@ -196,8 +196,25 @@ tópicos de frações, identificadas por IDs estáveis e persistidas nas tabelas
 grupos de conteúdo. São níveis distintos. As apresentações por usuário ficam
 em `questoes_apresentadas`.
 
+O conteúdo introdutório é um recurso separado das questões e pode ser carregado
+antes da sessão de exercícios:
+
+```http
+GET /api/exercicios/topicos?materia=Matemática
+```
+
+A resposta organiza os dados como matéria → tópicos → subtópicos. Cada nó possui
+`conteudo` com `resumo`, `formulas`, `significadosSimbolos`, `exemploResolvido`,
+`revisaoNecessaria` e `notaRevisao`. Este modelo também aceita outras matérias
+e tópicos. Para Matemática → Frações e seus sete subtópicos, o material não está
+no repositório; esses nós ficam pendentes, com `formulas: []` e
+`revisaoNecessaria: true`. Para Português → Interpretação de texto, o resumo
+fornecido é cadastrado, `formulas: []` e `revisaoNecessaria: false`; fórmulas
+não se aplicam ao tópico.
+
 ```http
 GET  /api/exercicios/questoes/proxima?materia=Matemática&topico=Frações&sessaoId=<uuid-opcional>
+GET  /api/exercicios/questoes/proxima?materia=Português&topico=Interpretação%20de%20texto&sessaoId=<uuid-opcional>
 POST /api/exercicios/questoes/{apresentacaoId}/resposta
 GET  /api/exercicios/questoes/historico
 ```
@@ -212,13 +229,14 @@ correção. `tipoResposta` distingue `ALTERNATIVA_UNICA` e
 correção exige igualdade exata entre o conjunto marcado e o conjunto correto.
 O payload da questão nunca contém respostas corretas; a correção retorna acerto
 e, por padrão, resposta correta e explicação. Histórico retorna as últimas
-100 apresentações do usuário autenticado.
+100 apresentações do usuário autenticado. O conjunto de Português inclui o
+texto-base enviado junto às cinco questões. A quinta questão usa
+`SELECAO_MULTIPLA` e exige o conjunto completo de respostas `{a, b, d}`.
 
-O pedido forneceu os tópicos, mas não anexou o material com enunciados. Por
-isso, o catálogo em `CatalogoQuestoesFracoes` é uma coleção inicial de exemplos
-autoriais revisados e deve ser substituído ou complementado quando o material
-didático estiver disponível. A política de reinício fica isolada no serviço e
-pode ser alterada sem mexer nos endpoints.
+As questões de Matemática continuam como exemplos autorais porque o material
+didático de frações não foi anexado. O conjunto de Português usa o texto,
+questões e gabarito fornecidos. A política de reinício fica isolada no serviço
+e pode ser alterada sem mexer nos endpoints.
 
 ### 🖥️ Plataformas
 

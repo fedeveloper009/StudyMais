@@ -26,7 +26,17 @@ public class CatalogoQuestoesFracoes implements CommandLineRunner {
             q("multiplicacao-fracoes-001","Multiplicação de frações","Calcule 2/3 × 3/5.","6/15","5/8","1/2","6/8","6/15","Multiplicamos numeradores e denominadores: (2×3)/(3×5)=6/15=2/5; a alternativa 6/15 representa o resultado.","MEDIO"),
             q("multiplicacao-fracoes-002","Multiplicação de frações","Calcule 1/4 × 2/3.","2/12","3/7","2/7","1/6","2/12","Multiplicamos os numeradores e os denominadores: (1×2)/(4×3)=2/12, que simplifica para 1/6.","MEDIO"),
             q("divisao-fracoes-001","Divisão de frações","Calcule 1/2 ÷ 1/4.","1/8","2","1/2","4","2","Dividir por 1/4 equivale a multiplicar por 4/1: 1/2 × 4 = 2.","MEDIO"),
-            q("divisao-fracoes-002","Divisão de frações","Calcule 2/3 ÷ 4/5.","8/15","5/6","6/5","2/7","5/6","Multiplicamos pela fração inversa: 2/3 × 5/4 = 10/12 = 5/6.","MEDIO")
+            q("divisao-fracoes-002","Divisão de frações","Calcule 2/3 ÷ 4/5.","8/15","5/6","6/5","2/7","5/6","Multiplicamos pela fração inversa: 2/3 × 5/4 = 10/12 = 5/6.","MEDIO"),
+            portugues("portugues-interpretacao-001","Onde Clara encontrou a caixa?",TipoRespostaQuestao.ALTERNATIVA_UNICA,
+                List.of("a) No quarto da escola.","b) No armário da avó.","c) Dentro de uma mala.","d) Em uma loja antiga.","e) No jardim."),List.of("b) No armário da avó.")),
+            portugues("portugues-interpretacao-002","O que havia dentro da caixa?",TipoRespostaQuestao.ALTERNATIVA_UNICA,
+                List.of("a) Fotografias, um botão e um bilhete.","b) Um casaco, um livro e uma carta.","c) Brinquedos, moedas e um mapa.","d) Fotografias, uma chave e um caderno.","e) Um botão, uma mala e um brinquedo."),List.of("a) Fotografias, um botão e um bilhete.")),
+            portugues("portugues-interpretacao-003","A quem pertencia o botão azul?",TipoRespostaQuestao.ALTERNATIVA_UNICA,
+                List.of("a) A Clara.","b) À mãe de Clara.","c) À avó de Clara.","d) A uma amiga da avó.","e) Não é possível saber pelo texto."),List.of("c) À avó de Clara.")),
+            portugues("portugues-interpretacao-004","O que podemos concluir sobre a avó ao final do texto?",TipoRespostaQuestao.ALTERNATIVA_UNICA,
+                List.of("a) Ela ficou assustada com a caixa.","b) Ela não se lembrava das fotografias.","c) Ela gostou de contar suas lembranças.","d) Ela pediu que Clara jogasse o botão fora.","e) Ela queria esconder a caixa."),List.of("c) Ela gostou de contar suas lembranças.")),
+            portugues("portugues-interpretacao-005","Selecione todas as informações verdadeiras de acordo com o texto.",TipoRespostaQuestao.SELECAO_MULTIPLA,
+                List.of("a) Clara encontrou a caixa na sexta-feira.","b) O bilhete dizia que o botão veio de uma viagem da avó.","c) Clara encontrou a caixa na escola.","d) A avó começou a contar histórias da infância.","e) A caixa estava vazia."),List.of("a) Clara encontrou a caixa na sexta-feira.","b) O bilhete dizia que o botão veio de uma viagem da avó.","d) A avó começou a contar histórias da infância."))
         );
         questoes.forEach(q->repository.findById(q.getId()).ifPresentOrElse(
                 existente->{
@@ -37,4 +47,6 @@ public class CatalogoQuestoesFracoes implements CommandLineRunner {
     }
     private Questao q(String id,String topic,String prompt,String a,String b,String c,String d,String correct,String explanation,String level){return new Questao(id,topic,prompt,TipoRespostaQuestao.ALTERNATIVA_UNICA,List.of(a,b,c,d),List.of(correct),explanation,level);}
     private Questao q(String id,String topic,String prompt,String a,String b,String c,String d,String correct1,String correct2,String correct3,String explanation,String level){return new Questao(id,topic,prompt,TipoRespostaQuestao.SELECAO_MULTIPLA,List.of(a,b,c,d),List.of(correct1,correct2,correct3),explanation,level);}
+    private static final String TEXTO_PORTUGUES="Na sexta-feira, Clara encontrou uma caixa de madeira no armário da avó. Dentro dela havia fotografias antigas, um botão azul e um bilhete: “Guarde este botão. Ele pertenceu ao casaco que usei na minha primeira viagem.” Clara chamou a avó, que sorriu e começou a contar histórias de quando era criança.";
+    private Questao portugues(String id,String enunciado,TipoRespostaQuestao tipo,List<String> alternativas,List<String> respostas){return new Questao(id,"Português","Interpretação de texto",null,enunciado,TEXTO_PORTUGUES,tipo,alternativas,respostas,null,null);}
 }
