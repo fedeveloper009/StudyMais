@@ -187,6 +187,39 @@ PUT    /tarefas/{id}
 DELETE /tarefas/{id}
 ```
 
+### 🧮 Exercícios de frações
+
+As rotas abaixo exigem JWT. O catálogo inicial contém questões para os sete
+tópicos de frações, identificadas por IDs estáveis e persistidas nas tabelas
+`questoes`, `questao_alternativas` e `questao_respostas`. Cada questão associa
+`materia = Matemática`, `topico = Frações` e um `subtopico` para um dos sete
+grupos de conteúdo. São níveis distintos. As apresentações por usuário ficam
+em `questoes_apresentadas`.
+
+```http
+GET  /api/exercicios/questoes/proxima?materia=Matemática&topico=Frações&sessaoId=<uuid-opcional>
+POST /api/exercicios/questoes/{apresentacaoId}/resposta
+GET  /api/exercicios/questoes/historico
+```
+
+Sem `sessaoId`, a rota da próxima questão cria uma sessão e retorna seu ID. Para
+continuar sem repetição, o cliente deve enviar esse mesmo ID nos próximos
+pedidos. Ao esgotar as questões elegíveis, por padrão a seleção reinicia o ciclo
+dentro da mesma sessão. `EXERCICIOS_REINICIAR_CICLO` controla essa política e
+`EXERCICIOS_REVELAR_CORRECAO` controla a liberação da resposta e explicação após
+correção. `tipoResposta` distingue `ALTERNATIVA_UNICA` e
+`SELECAO_MULTIPLA`; a resposta enviada usa `{ "respostas": ["..."] }` e a
+correção exige igualdade exata entre o conjunto marcado e o conjunto correto.
+O payload da questão nunca contém respostas corretas; a correção retorna acerto
+e, por padrão, resposta correta e explicação. Histórico retorna as últimas
+100 apresentações do usuário autenticado.
+
+O pedido forneceu os tópicos, mas não anexou o material com enunciados. Por
+isso, o catálogo em `CatalogoQuestoesFracoes` é uma coleção inicial de exemplos
+autoriais revisados e deve ser substituído ou complementado quando o material
+didático estiver disponível. A política de reinício fica isolada no serviço e
+pode ser alterada sem mexer nos endpoints.
+
 ### 🖥️ Plataformas
 
 Permite cadastrar plataformas de estudo vinculadas a um usuário.
