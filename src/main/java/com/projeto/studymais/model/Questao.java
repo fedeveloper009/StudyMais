@@ -45,12 +45,12 @@ public class Questao {
         this(id,materia,topico,subtopico,enunciado,null,tipo,alternativas,respostas,explicacao,dificuldade);
     }
     public Questao(String id,String materia,String topico,String subtopico,String enunciado,String textoBase,TipoRespostaQuestao tipo,List<String> alternativas,List<String> respostas,String explicacao,String dificuldade) {
-        this.id=id; this.materia=materia; this.topico=topico; this.subtopico=subtopico; this.enunciado=enunciado; this.tipoResposta=tipo;
+        this.id=id; this.materia=materia; this.topico=topico; this.subtopico=subtopico==null?"":subtopico; this.enunciado=enunciado; this.tipoResposta=tipo;
         this.textoBase=textoBase;
         this.alternativas=new ArrayList<>(alternativas); this.respostasCorretas=new ArrayList<>(respostas); this.explicacao=explicacao; this.dificuldade=dificuldade;
     }
     public String getId(){return id;} public String getMateria(){return materia;} public String getTopico(){return topico;} public String getSubtopico(){return subtopico;} public String getEnunciado(){return enunciado;} public String getTextoBase(){return textoBase;}
-    public void definirHierarquia(String materia,String topico,String subtopico){this.materia=materia;this.topico=topico;this.subtopico=subtopico;}
+    public void definirHierarquia(String materia,String topico,String subtopico){this.materia=materia;this.topico=topico;this.subtopico=subtopico==null?"":subtopico;}
     public TipoRespostaQuestao getTipoResposta(){return tipoResposta;} public List<String> getAlternativas(){return alternativas;}
     public List<String> getRespostasCorretas(){return respostasCorretas;} public String getExplicacao(){return explicacao;} public String getDificuldade(){return dificuldade;}
 }

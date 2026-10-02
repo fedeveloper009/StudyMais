@@ -40,8 +40,10 @@ public class CatalogoQuestoesFracoes implements CommandLineRunner {
         );
         questoes.forEach(q->repository.findById(q.getId()).ifPresentOrElse(
                 existente->{
-                    String subtopico="Frações".equals(existente.getTopico())?existente.getSubtopico():existente.getTopico();
-                    existente.definirHierarquia("Matemática","Frações",subtopico);
+                    String subtopico=existente.getSubtopico();
+                    // Migra registros antigos em que o nome do subtópico ainda ocupava a coluna topico.
+                    if("Matemática".equals(q.getMateria())&&!"Frações".equals(existente.getTopico())) subtopico=existente.getTopico();
+                    existente.definirHierarquia(q.getMateria(),q.getTopico(),subtopico);
                     repository.save(existente);
                 },()->repository.save(q)));
     }
