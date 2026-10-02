@@ -206,11 +206,12 @@ GET /api/exercicios/topicos?materia=Matemática
 A resposta organiza os dados como matéria → tópicos → subtópicos. Cada nó possui
 `conteudo` com `resumo`, `formulas`, `significadosSimbolos`, `exemploResolvido`,
 `revisaoNecessaria` e `notaRevisao`. Este modelo também aceita outras matérias
-e tópicos. Para Matemática → Frações e seus sete subtópicos, o material não está
-no repositório; esses nós ficam pendentes, com `formulas: []` e
-`revisaoNecessaria: true`. Para Português → Interpretação de texto, o resumo
-fornecido é cadastrado, `formulas: []` e `revisaoNecessaria: false`; fórmulas
-não se aplicam ao tópico.
+e tópicos. Matemática → Frações agora tem o resumo e exemplo fornecidos,
+significados de numerador e denominador, `formulas: []` e
+`revisaoNecessaria: false`. Seus sete subtópicos específicos continuam
+pendentes de material de referência. Português → Interpretação de texto tem o
+resumo fornecido, `formulas: []` e `revisaoNecessaria: false`; fórmulas não se
+aplicam ao tópico.
 
 ```http
 GET  /api/exercicios/questoes/proxima?materia=Matemática&topico=Frações&sessaoId=<uuid-opcional>

@@ -2,6 +2,7 @@ package com.projeto.studymais.model;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /** Material introdutório separado do banco de questões. Uma linha pode descrever
@@ -31,4 +32,8 @@ public class ConteudoTopico {
     public String getId(){return id;} public String getMateria(){return materia;} public String getTopico(){return topico;} public String getSubtopico(){return subtopico;}
     public String getResumo(){return resumo;} public List<FormulaTopico> getFormulas(){return formulas;} public List<SignificadoSimbolo> getSignificadosSimbolos(){return significadosSimbolos;}
     public String getExemploResolvido(){return exemploResolvido;} public boolean isRevisaoNecessaria(){return revisaoNecessaria;} public String getNotaRevisao(){return notaRevisao;}
+    public void atualizarConteudo(String resumo,Collection<FormulaTopico> formulas,Collection<SignificadoSimbolo> significados,String exemplo,boolean revisaoNecessaria,String nota){
+        this.resumo=resumo;this.formulas.clear();this.formulas.addAll(formulas);this.significadosSimbolos.clear();this.significadosSimbolos.addAll(significados);
+        this.exemploResolvido=exemplo;this.revisaoNecessaria=revisaoNecessaria;this.notaRevisao=nota;
+    }
 }
