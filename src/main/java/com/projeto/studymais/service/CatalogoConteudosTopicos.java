@@ -5,6 +5,7 @@ import com.projeto.studymais.model.SignificadoSimbolo;
 import com.projeto.studymais.repository.ConteudoTopicoRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /** Cria nós extensíveis da hierarquia; conteúdos ficam pendentes até revisão da fonte didática. */
@@ -15,6 +16,7 @@ public class CatalogoConteudosTopicos implements CommandLineRunner {
     private static final String EXEMPLO_FRACOES="Em 3/4, o todo foi dividido em 4 partes iguais e 3 foram consideradas.";
     private final ConteudoTopicoRepository repository;
     public CatalogoConteudosTopicos(ConteudoTopicoRepository repository){this.repository=repository;}
+    @Transactional
     @Override public void run(String... args){
         List<ConteudoTopico> nos=List.of(
             new ConteudoTopico("matematica-fracoes","Matemática","Frações",null,AVISO),
