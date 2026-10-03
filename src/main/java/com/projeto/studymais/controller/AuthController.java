@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,6 +53,16 @@ public class AuthController {
             sequenciaService.registrarLogin(authentication.getName());
         }
         return ResponseEntity.ok(new LoginResponseDTO(jwtService.generateToken(authentication.getName())));
+    }
+
+    /** Registra a atividade diária quando o app inicia com um JWT já salvo. */
+    @PostMapping("/activity")
+    public ResponseEntity<Void> registrarAtividade(Authentication authentication) {
+        SequenciaLoginService sequenciaService = sequenciaLoginService.getIfAvailable();
+        if (sequenciaService != null) {
+            sequenciaService.registrarLogin(authentication.getName());
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/verify-email/request")

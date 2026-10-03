@@ -4,17 +4,23 @@ import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.repository.UsuarioRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.Clock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SequenciaLoginService {
 
-    private static final ZoneId FUSO_BRASILIA = ZoneId.of("America/Sao_Paulo");
     private final UsuarioRepository usuarioRepository;
+    private final Clock relogio;
 
     public SequenciaLoginService(UsuarioRepository usuarioRepository) {
+        this(usuarioRepository, Clock.system(ZoneId.of("America/Sao_Paulo")));
+    }
+
+    SequenciaLoginService(UsuarioRepository usuarioRepository, Clock relogio) {
         this.usuarioRepository = usuarioRepository;
+        this.relogio = relogio;
     }
 
     @Transactional
@@ -27,7 +33,7 @@ public class SequenciaLoginService {
         Usuario usuario = usuarioRepository.findByIdForUpdate(encontrado.getUser_id())
                 .orElse(encontrado);
 
-        LocalDate hoje = LocalDate.now(FUSO_BRASILIA);
+        LocalDate hoje = LocalDate.now(relogio);
         LocalDate ultimoLogin = usuario.getUltimaDataLogin();
         if (hoje.equals(ultimoLogin)) {
             return;
