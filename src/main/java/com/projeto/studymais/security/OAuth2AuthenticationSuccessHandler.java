@@ -4,12 +4,14 @@ import com.projeto.studymais.model.Usuario;
 import com.projeto.studymais.service.GoogleOAuth2Exception;
 import com.projeto.studymais.service.GoogleUserService;
 import com.projeto.studymais.service.JwtService;
+import com.projeto.studymais.service.SequenciaLoginService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -26,6 +28,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final JwtService jwtService;
     private final AuthenticationFailureHandler failureHandler;
     private final String frontendSuccessUrl;
+    private final SequenciaLoginService sequenciaLoginService;
 
     public OAuth2AuthenticationSuccessHandler(
             GoogleUserService googleUserService,
@@ -33,9 +36,21 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             AuthenticationFailureHandler failureHandler,
             @Value("${app.oauth2.frontend-success-url}") String frontendSuccessUrl
     ) {
+        this(googleUserService, jwtService, failureHandler, null, frontendSuccessUrl);
+    }
+
+    @Autowired
+    public OAuth2AuthenticationSuccessHandler(
+            GoogleUserService googleUserService,
+            JwtService jwtService,
+            AuthenticationFailureHandler failureHandler,
+            SequenciaLoginService sequenciaLoginService,
+            @Value("${app.oauth2.frontend-success-url}") String frontendSuccessUrl
+    ) {
         this.googleUserService = googleUserService;
         this.jwtService = jwtService;
         this.failureHandler = failureHandler;
+        this.sequenciaLoginService = sequenciaLoginService;
         this.frontendSuccessUrl = frontendSuccessUrl;
     }
 
@@ -68,6 +83,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                     email.trim().toLowerCase(Locale.ROOT),
                     googleSub
             );
+            if (sequenciaLoginService != null) {
+                sequenciaLoginService.registrarLogin(usuario.getEmail());
+            }
             String token = jwtService.generateToken(usuario.getEmail());
             String redirectUrl = UriComponentsBuilder.fromUriString(frontendSuccessUrl)
                     .queryParam("token", token)

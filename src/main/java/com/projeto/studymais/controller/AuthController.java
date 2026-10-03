@@ -4,6 +4,7 @@ import com.projeto.studymais.dto.auth.LoginRequestDTO;
 import com.projeto.studymais.dto.auth.LoginResponseDTO;
 import com.projeto.studymais.service.JwtService;
 import com.projeto.studymais.service.ContaSecurityService;
+import com.projeto.studymais.service.SequenciaLoginService;
 import com.projeto.studymais.dto.auth.EmailRequestDTO;
 import com.projeto.studymais.dto.auth.ResetPasswordRequestDTO;
 import com.projeto.studymais.dto.auth.TokenRequestDTO;
@@ -27,12 +28,15 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final ObjectProvider<ContaSecurityService> contaSecurityService;
+    private final ObjectProvider<SequenciaLoginService> sequenciaLoginService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtService jwtService,
-                          ObjectProvider<ContaSecurityService> contaSecurityService) {
+                          ObjectProvider<ContaSecurityService> contaSecurityService,
+                          ObjectProvider<SequenciaLoginService> sequenciaLoginService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.contaSecurityService = contaSecurityService;
+        this.sequenciaLoginService = sequenciaLoginService;
     }
 
     /**
@@ -43,6 +47,10 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.senha())
         );
+        SequenciaLoginService sequenciaService = sequenciaLoginService.getIfAvailable();
+        if (sequenciaService != null) {
+            sequenciaService.registrarLogin(authentication.getName());
+        }
         return ResponseEntity.ok(new LoginResponseDTO(jwtService.generateToken(authentication.getName())));
     }
 

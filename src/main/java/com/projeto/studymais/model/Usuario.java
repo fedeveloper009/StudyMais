@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "usuarios")
@@ -39,6 +40,8 @@ public class Usuario {
     private Integer xp = 0;
     @Column(name = "dias_de_sequencia", nullable = false)
     private Integer diasDeSequencia = 0;
+    @Column(name = "ultima_data_login")
+    private LocalDate ultimaDataLogin;
     @Column(name = "tempo_estudado", nullable = false)
     private Long tempoEstudado = 0L;
     @Column(name = "materia_estudada")
@@ -141,6 +144,14 @@ public class Usuario {
 
     public void setDiasDeSequencia(Integer diasDeSequencia) {
         this.diasDeSequencia = diasDeSequencia == null ? 0 : diasDeSequencia;
+    }
+
+    public LocalDate getUltimaDataLogin() {
+        return ultimaDataLogin;
+    }
+
+    public void setUltimaDataLogin(LocalDate ultimaDataLogin) {
+        this.ultimaDataLogin = ultimaDataLogin;
     }
 
     public Long getTempoEstudado() {
