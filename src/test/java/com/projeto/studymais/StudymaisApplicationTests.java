@@ -6,6 +6,7 @@ import com.projeto.studymais.exception.DuplicateEmailException;
 import com.projeto.studymais.exception.GlobalExceptionHandler;
 import com.projeto.studymais.security.JsonAuthenticationEntryPoint;
 import com.projeto.studymais.service.JwtService;
+import com.projeto.studymais.service.SequenciaLoginService;
 import com.projeto.studymais.service.UsuarioService;
 import io.jsonwebtoken.JwtException;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -48,6 +50,9 @@ class StudymaisApplicationTests {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private SequenciaLoginService sequenciaLoginService;
 
     @MockitoBean
     private UserDetailsService userDetailsService;
@@ -121,6 +126,25 @@ class StudymaisApplicationTests {
                         .header("Authorization", "Bearer jwt-valido"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status").value(403));
+    }
+
+    @Test
+    void jwtValidoRegistraAtividadeMesmoQuandoRecursoRetorna403() throws Exception {
+        UserDetails user = User.withUsername("ana@example.com")
+                .password("senha")
+                .roles("USER")
+                .build();
+        when(jwtService.extractUsername("jwt-valido")).thenReturn(user.getUsername());
+        when(userDetailsService.loadUserByUsername(user.getUsername())).thenReturn(user);
+        when(jwtService.isTokenValid("jwt-valido", user)).thenReturn(true);
+        doThrow(new org.springframework.security.access.AccessDeniedException("Acesso negado."))
+                .when(usuarioService).buscarPorId(2);
+
+        mockMvc.perform(get("/api/usuarios/2")
+                        .header("Authorization", "Bearer " + "jwt-valido"))
+                .andExpect(status().isForbidden());
+
+        verify(sequenciaLoginService).registrarLogin(user.getUsername());
     }
 
     @Test

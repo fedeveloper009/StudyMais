@@ -29,11 +29,14 @@ public class SequenciaLoginService {
         if (encontrado == null) {
             return;
         }
+        LocalDate hoje = LocalDate.now(relogio);
+        if (hoje.equals(encontrado.getUltimaDataLogin())) {
+            return;
+        }
         // Serializa logins concorrentes do mesmo usuario para nao perder incremento.
         Usuario usuario = usuarioRepository.findByIdForUpdate(encontrado.getUser_id())
                 .orElse(encontrado);
 
-        LocalDate hoje = LocalDate.now(relogio);
         LocalDate ultimoLogin = usuario.getUltimaDataLogin();
         if (hoje.equals(ultimoLogin)) {
             return;

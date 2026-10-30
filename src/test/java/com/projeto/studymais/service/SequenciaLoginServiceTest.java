@@ -2,6 +2,7 @@ package com.projeto.studymais.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.projeto.studymais.model.Usuario;
@@ -35,11 +36,11 @@ class SequenciaLoginServiceTest {
         usuario.setUser_id(1);
         usuario.setEmail(EMAIL);
         when(usuarioRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.findByIdForUpdate(1)).thenReturn(Optional.of(usuario));
     }
 
     @Test
     void primeiroLoginDoDiaIniciaSequenciaEmUmNoHorarioDeBrasilia() {
+        when(usuarioRepository.findByIdForUpdate(1)).thenReturn(Optional.of(usuario));
         serviceEm("2026-10-02T02:30:00Z"); // 23:30 do dia anterior em Brasilia
 
         service.registrarLogin(EMAIL);
@@ -53,6 +54,7 @@ class SequenciaLoginServiceTest {
     void loginEmDiasConsecutivosIncrementaUmaVezPorDia() {
         usuario.setUltimaDataLogin(LocalDate.of(2026, 10, 1));
         usuario.setDiasDeSequencia(4);
+        when(usuarioRepository.findByIdForUpdate(1)).thenReturn(Optional.of(usuario));
         serviceEm("2026-10-02T15:00:00Z");
 
         service.registrarLogin(EMAIL);
@@ -67,6 +69,7 @@ class SequenciaLoginServiceTest {
     void diaSemLoginReiniciaSequenciaEmUm() {
         usuario.setUltimaDataLogin(LocalDate.of(2026, 9, 30));
         usuario.setDiasDeSequencia(12);
+        when(usuarioRepository.findByIdForUpdate(1)).thenReturn(Optional.of(usuario));
         serviceEm("2026-10-02T15:00:00Z");
 
         service.registrarLogin(EMAIL);
@@ -74,6 +77,19 @@ class SequenciaLoginServiceTest {
         assertEquals(LocalDate.of(2026, 10, 2), usuario.getUltimaDataLogin());
         assertEquals(1, usuario.getDiasDeSequencia());
         verify(usuarioRepository).save(usuario);
+    }
+
+    @Test
+    void atividadeJaRegistradaHojeNaoAdquireBloqueioNemPersisteNovamente() {
+        usuario.setUltimaDataLogin(LocalDate.of(2026, 10, 2));
+        usuario.setDiasDeSequencia(5);
+        serviceEm("2026-10-02T15:00:00Z");
+
+        service.registrarLogin(EMAIL);
+
+        assertEquals(5, usuario.getDiasDeSequencia());
+        verify(usuarioRepository).findByEmailIgnoreCase(EMAIL);
+        verifyNoMoreInteractions(usuarioRepository);
     }
 
     private void serviceEm(String instant) {

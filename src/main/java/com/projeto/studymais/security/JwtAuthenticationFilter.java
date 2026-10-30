@@ -1,6 +1,7 @@
 package com.projeto.studymais.security;
 
 import com.projeto.studymais.service.JwtService;
+import com.projeto.studymais.service.SequenciaLoginService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,15 +24,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final SequenciaLoginService sequenciaLoginService;
     private final UserDetailsService userDetailsService;
     private final AuthenticationEntryPoint authenticationEntryPoint;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
+            SequenciaLoginService sequenciaLoginService,
             UserDetailsService userDetailsService,
             AuthenticationEntryPoint authenticationEntryPoint
     ) {
         this.jwtService = jwtService;
+        this.sequenciaLoginService = sequenciaLoginService;
         this.userDetailsService = userDetailsService;
         this.authenticationEntryPoint = authenticationEntryPoint;
     }
@@ -72,6 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            sequenciaLoginService.registrarLogin(email);
             filterChain.doFilter(request, response);
         } catch (JwtException | IllegalArgumentException | UsernameNotFoundException | BadCredentialsException exception) {
             SecurityContextHolder.clearContext();

@@ -107,7 +107,10 @@ Cliente
 API
 ```
 
-Isso permite proteger endpoints que exigem um usuário autenticado.
+Isso permite proteger endpoints que exigem um usuário autenticado. Pedidos
+protegidos feitos com um JWT válido registram a atividade diária, inclusive
+quando o cliente reabre uma sessão com um token já salvo. O registro é
+idempotente por dia e usa o fuso de São Paulo.
 
 ---
 
