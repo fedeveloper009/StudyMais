@@ -295,14 +295,23 @@ O projeto possui o driver oficial do PostgreSQL configurado como dependência Ma
 
 ### Configuração
 
-Crie as variáveis de ambiente necessárias para a conexão com o banco.
+Configure as variáveis de ambiente no serviço que executa a API. A URL deve
+ser JDBC, começando com `jdbc:postgresql://`; URLs no formato `postgres://` ou
+`postgresql://` precisam ser convertidas antes de serem usadas.
 
-Exemplo:
+| Configuração | Variáveis aceitas |
+| --- | --- |
+| URL JDBC | `SUPABASE_DB_URL`, `DB_URL` ou `DATABASE_URL` |
+| Usuário | `DB_USERNAME` ou `DATABASE_USERNAME` |
+| Senha | `DB_PASSWORD` ou `DATABASE_PASSWORD` |
 
-```properties
-spring.datasource.url=${DATABASE_URL}
-spring.datasource.username=${DATABASE_USERNAME}
-spring.datasource.password=${DATABASE_PASSWORD}
+Configure uma URL, um usuário e uma senha válidos. `SUPABASE_DB_URL` e as
+variáveis `DB_*` têm precedência sobre as alternativas. Por exemplo:
+
+```text
+SUPABASE_DB_URL=jdbc:postgresql://host:5432/postgres?sslmode=require
+DB_USERNAME=postgres
+DB_PASSWORD=<senha-do-banco>
 ```
 
 **Não coloque senhas ou chaves privadas diretamente no repositório.**
