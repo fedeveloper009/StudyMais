@@ -5,6 +5,7 @@ import com.projeto.studymais.repository.UsuarioRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ public class SequenciaLoginService {
     private final UsuarioRepository usuarioRepository;
     private final Clock relogio;
 
+    @Autowired
     public SequenciaLoginService(UsuarioRepository usuarioRepository) {
         this(usuarioRepository, Clock.system(ZoneId.of("America/Sao_Paulo")));
     }
