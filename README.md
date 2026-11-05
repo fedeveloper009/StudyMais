@@ -302,17 +302,28 @@ ser JDBC, começando com `jdbc:postgresql://`; URLs no formato `postgres://` ou
 | Configuração | Variáveis aceitas |
 | --- | --- |
 | URL JDBC | `SUPABASE_DB_URL`, `DB_URL` ou `DATABASE_URL` |
-| Usuário | `DB_USERNAME` ou `DATABASE_USERNAME` |
-| Senha | `DB_PASSWORD` ou `DATABASE_PASSWORD` |
+| Usuário | `SUPABASE_DB_USERNAME`, `DB_USERNAME` ou `DATABASE_USERNAME` |
+| Senha | `SUPABASE_DB_PASSWORD`, `DB_PASSWORD` ou `DATABASE_PASSWORD` |
 
-Configure uma URL, um usuário e uma senha válidos. `SUPABASE_DB_URL` e as
-variáveis `DB_*` têm precedência sobre as alternativas. Por exemplo:
+Configure URL, usuário e senha copiados da mesma opção **Connect** do projeto
+Supabase. Não misture o host de um projeto com o usuário de outro. O host do
+pooler compartilhado deve ser copiado do painel (não montado manualmente), e
+o usuário inclui o project ref:
 
 ```text
-SUPABASE_DB_URL=jdbc:postgresql://host:5432/postgres?sslmode=require
-DB_USERNAME=postgres
-DB_PASSWORD=<senha-do-banco>
+SUPABASE_DB_URL=jdbc:postgresql://<host-copiado-do-painel>:5432/postgres?sslmode=require
+SUPABASE_DB_USERNAME=postgres.<project-ref>
+SUPABASE_DB_PASSWORD=<senha-do-banco>
 ```
+
+Para um backend persistente, prefira a conexão direta se a rede suportar IPv6
+(ou tiver o adicional IPv4); caso contrário, use o pooler session na porta
+`5432`. O pooler transaction usa `6543` e não suporta prepared statements,
+portanto requer configuração adicional do driver JDBC. O erro `ENOTFOUND
+tenant/user ... not found` indica que o usuário/project ref não existe no
+pooler indicado: confira se usuário e host foram copiados juntos do mesmo
+projeto. `SUPABASE_DB_URL` e `SUPABASE_DB_*` têm precedência sobre `DB_*`, que
+por sua vez têm precedência sobre `DATABASE_*`.
 
 **Não coloque senhas ou chaves privadas diretamente no repositório.**
 
